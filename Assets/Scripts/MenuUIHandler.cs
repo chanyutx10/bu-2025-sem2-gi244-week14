@@ -12,12 +12,6 @@ public class MenuUIHandler : MonoBehaviour
 {
     public ColorPicker ColorPicker;
 
-    public void NewColorSelected(Color color)
-    {
-        // add code here to handle when a color is selected
-        MainManager.GetInstance().TeamColor = color;
-    }
-
     private void Start()
     {
         ColorPicker.Init();
@@ -26,6 +20,12 @@ public class MenuUIHandler : MonoBehaviour
 
         // 1.10 update color picker to show the current TeamColor in MainManager when load Menu scene
         ColorPicker.SelectColor(MainManager.GetInstance().TeamColor);
+    }
+
+    public void NewColorSelected(Color color)
+    {
+        // add code here to handle when a color is selected
+        MainManager.GetInstance().TeamColor = color;
     }
 
     public void StartNew()
@@ -51,12 +51,14 @@ public class MenuUIHandler : MonoBehaviour
 
     public void SaveColorClicked()
     {
-        MainManager.GetInstance().SaveColor();
+        // MainManager.GetInstance().SaveColor();
+        MainManager.GetInstance().SaveColorWithEncryption();
     }
 
     public void LoadColorClicked()
     {
-        MainManager.GetInstance().LoadColor();
+        // MainManager.GetInstance().LoadColor();
+        MainManager.GetInstance().LoadColorWithEncryption();
         ColorPicker.SelectColor(MainManager.GetInstance().TeamColor);
     }
 }

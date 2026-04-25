@@ -7,12 +7,19 @@ public class AnimatorHandler : MonoBehaviour
 {
     private Animator m_Animator;
     private NavMeshAgent m_Agent;
-    
+
+    public ColorPicker ColorPicker;
+
     // Start is called before the first frame update
     void Start()
     {
         m_Agent = GetComponentInParent<NavMeshAgent>();
         m_Animator = GetComponentInChildren<Animator>();
+
+        if (ColorPicker != null)
+        {
+            ColorPicker.onColorChanged += ColorChanged;
+        }
     }
 
     // Update is called once per frame
@@ -22,5 +29,10 @@ public class AnimatorHandler : MonoBehaviour
         {
             m_Animator.SetFloat("Speed", m_Agent.velocity.magnitude / m_Agent.speed);
         }
+    }
+
+    void ColorChanged(Color c)
+    {
+        Debug.Log("Color changed to: " + c);
     }
 }

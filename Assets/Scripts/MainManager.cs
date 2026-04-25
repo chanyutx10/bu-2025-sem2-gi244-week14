@@ -112,6 +112,72 @@ public class MainManager : MonoBehaviour
             SaveData data = JsonUtility.FromJson<SaveData>(json);
             TeamColor = data.TeamColor;
         }
+    }
 
+    public void SaveColorWithEncryption()
+    {
+        // 5.2
+        SaveData data = new SaveData();
+        data.TeamColor = TeamColor;
+        data.LastTimePlayed = DateTime.Now.ToString();
+
+        string json = JsonUtility.ToJson(data);
+        string encryptedJson = encrypt(json, "mysecretkey");
+        string path = Path.Combine(Application.persistentDataPath, "savefile_encrypted.json");
+        File.WriteAllText(path, encryptedJson);
+        Debug.Log("Encrypted save file path: " + path);
+    }
+
+    public void LoadColorWithEncryption()
+    {
+        string path = Path.Combine(Application.persistentDataPath, "savefile_encrypted.json");
+        if (File.Exists(path))
+        {
+            string encryptedJson = File.ReadAllText(path);
+            string decryptedJson = decrypt(encryptedJson, "mysecretkey");
+            SaveData data = JsonUtility.FromJson<SaveData>(decryptedJson);
+            TeamColor = data.TeamColor;
+            Debug.Log("Last time played: " + data.LastTimePlayed);
+        }
+    }
+
+    private string encrypt(string input, string aesKey)
+    {
+        byte[] inputBytes = System.Text.Encoding.UTF8.GetBytes(input);
+        byte[] keyBytes = new byte[16];
+        Array.Copy(System.Text.Encoding.UTF8.GetBytes(aesKey), keyBytes, Math.Min(keyBytes.Length, aesKey.Length));
+
+        using (var aes = new System.Security.Cryptography.AesManaged())
+        {
+            aes.Key = keyBytes;
+            aes.Mode = System.Security.Cryptography.CipherMode.ECB;
+            aes.Padding = System.Security.Cryptography.PaddingMode.PKCS7;
+
+            using (var encryptor = aes.CreateEncryptor())
+            {
+                byte[] encryptedBytes = encryptor.TransformFinalBlock(inputBytes, 0, inputBytes.Length);
+                return Convert.ToBase64String(encryptedBytes);
+            }
+        }
+    }
+
+    private string decrypt(string input, string aesKey)
+    {
+        byte[] encryptedBytes = Convert.FromBase64String(input);
+        byte[] keyBytes = new byte[16];
+        Array.Copy(System.Text.Encoding.UTF8.GetBytes(aesKey), keyBytes, Math.Min(keyBytes.Length, aesKey.Length));
+
+        using (var aes = new System.Security.Cryptography.AesManaged())
+        {
+            aes.Key = keyBytes;
+            aes.Mode = System.Security.Cryptography.CipherMode.ECB;
+            aes.Padding = System.Security.Cryptography.PaddingMode.PKCS7;
+
+            using (var decryptor = aes.CreateDecryptor())
+            {
+                byte[] decryptedBytes = decryptor.TransformFinalBlock(encryptedBytes, 0, encryptedBytes.Length);
+                return System.Text.Encoding.UTF8.GetString(decryptedBytes);
+            }
+        }
     }
 }
